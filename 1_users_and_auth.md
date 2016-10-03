@@ -377,9 +377,9 @@ Or you can add a user with the form you just created at `/users/new`.
 
 Test your user show view before moving on.
 
-## An existing user should be able to log into the app.
+## Managing Sessions for Existing Users
 
-Now that we can create a user, we need to let existing users log in.
+Now that we can create a user, we need to let existing users log in and out.
 
 ### The /login route should show a form to log in.
 
@@ -716,12 +716,12 @@ And let's make sure to update `views/layouts/application.html.erb` to display th
 <!--</html>-->
 ```
 
-Nice work! We're finished with Auth!
+Nice work! We're finished with Authentication!
 
-Now delete this app and do it again!!! Once you've completed this auth another time, you can move on to any bonuses you're interested in below.
+Now delete this app and do it again!!! Once you've completed the app to this level another time, you can move on to any bonuses you're interested in below.
 
 
-### Bonus
+## Bonus
 
 1. On the profile page, display when the user created their account. To format the date, use Ruby's built in time formatter, [strftime](http://ruby-doc.org/core-2.2.0/Time.html#method-i-strftime).
 
