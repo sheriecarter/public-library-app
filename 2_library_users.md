@@ -2,24 +2,24 @@
 
 ## A Library Model
 
-Let's add our second model a `Library` model that will later have books.
+Let's add our second model, a `Library`!
 
 ```bash
 rails g model library name:string floor_count:integer floor_area:integer
 ```
 
-We want a `user` to be able to join a library, but this means a `n:n` relationship. A user will have many libraries and library will have many users.
+We want a `user` to be able to join multiple libraries, but each library can also have multiple members. This means a many-to-many or `n:n` relationship.
 
-Thus we need a `library_user` model.
+Thus, we need a `library_user` model for our join table.
 
 
 ```ruby
-rails g model library_user user:references library:references
+rails g model library_user user:belongs_to library:belongs_to
 ```
 
-In the future we can store other things on the `library_user` model that are relevant to someone's membership in a library.
+In the future we can store other things on the `library_user` model that are relevant to someone's membership in a library like join date, membership "level", etc.
 
-We will also need two different controllers for each of these models. Let's start by being able to do CRUD with Libraries.
+We will also need two different controllers for `library` and `library_user`.  Let's start by being able to do CRUD with Libraries.
 
 ```
 rails g controller libraries
@@ -45,8 +45,6 @@ class LibrariesController < ApplicationController
 
   def index
     @libraries = Library.all
-
-    render :index
   end
 
 end
@@ -85,8 +83,6 @@ class LibrariesController < ApplicationController
 ...
   def new
     @library = Library.new
-
-    render :new
   end
 end
 ```
@@ -111,7 +107,7 @@ Finally, we can add a view for `new` library.
 
 This form has nowhere to go; if we try to submit it we get an error because there is no `POST /libraries` route.
 
-Let's add one.
+Add one.
 
 
 ```ruby
@@ -129,10 +125,15 @@ Then we need a corresponding `libraries#create`.
 class LibrariesController < ApplicationController
 
   def create
-    library_params = params.require(:library).permit(:name, :floor_count, :floor_area)
     @library = Library.create(library_params)
 
     redirect_to libraries_path
+  end
+
+  private
+
+  def library_params   
+    params.require(:library).permit(:name, :floor_count, :floor_area)
   end
 end
 ```
