@@ -126,7 +126,6 @@ class LibrariesController < ApplicationController
 
   def create
     @library = Library.create(library_params)
-
     redirect_to libraries_path
   end
 
@@ -143,35 +142,30 @@ We now have the ability to view all libraries (`libraries#index`).
 
 Please take a moment to implement `libraries#show` on your own. You will need to create routes, controller actions, and html views.
 
-Bonus: We recommend you also try to implement `edit`, `update`, `show`, and `delete`.
+Bonus: We recommend you also try to implement `edit`, `update`, `show`, and `delete`, but these aren't required for our initial setup.
 
 ## Joining A Library
-Before we get started joining a `library` and a `user` we need to wire together our `Library` and our `User` via associations.
-
-```ruby
-class User < ActiveRecord::Base
-  has_many :library_users
-  has_many :libraries, through: :library_users
-
-  ...
-end
-```
-And we create the reciprocal associations in our `Library` model.
-
-```ruby
-class Library < ActiveRecord::Base
-  has_many :library_users
-  has_many :users, through: :library_users
-end
-```
-
-And we need to associate `LibraryUser` with `Library` and `User` too!
-
+Before we get start letting users become library members,  we need to wire together all of our models to know about these associations.
 
 ```ruby
 class LibraryUser < ActiveRecord::Base
   belongs_to :user
   belongs_to :library
+end
+```
+
+```ruby
+class User < ActiveRecord::Base
+  has_many :library_users
+  has_many :libraries, through: :library_users
+  # ...
+end
+```
+
+```ruby
+class Library < ActiveRecord::Base
+  has_many :library_users
+  has_many :users, through: :library_users
 end
 ```
 
@@ -193,24 +187,26 @@ You should now test this out in the console.
 > user.libraries
 #=> [ <#Library ... @name="SFPL" @id=1> ]
 ```
+
+### `library_users` Controller
+
 In order for us to have users join libraries, we need to first create a `library_users` controller.
 
 ```bash
 rails g controller library_users
 ```
 
-We want to be able to view all user memberships to a library. We can specify this as a url like `/users/:user_id/libraries`.
+We want to be able to view all user memberships to a library. We need to decide on a route for this. Based on RESTful routing, we could choose `/users/:user_id/libraries` or `/libraries/:library_id/users`.  Either one would be okay, but an application should not have both.  We'll choose the first since this app is more centered on users than libraries.
 
 ```ruby
 
 Rails.application.routes.draw do
   ...
   get "/users/:user_id/libraries", to: "library_users#index", as: "user_libraries"
-
 end
 ```
 
-We also neeed the corresponding `index` method in the `library_users` controller
+We also need the corresponding `index` method in the `library_users` controller.
 
 
 ```ruby
@@ -219,8 +215,6 @@ class LibraryUsersController < ApplicationController
   def index
     @user = User.find(params[:user_id])
     @libraries = @user.libraries
-
-    render :index
   end
 end
 ```
@@ -238,7 +232,7 @@ Then we can have the `index` action list the user's libraries (`app/views/librar
 </ul>
 ```
 
-We can test this by going to `localhost:/users/1/libraries`. If you want, you can test that this is working by launching your `rails console` and adding a library to a user.
+We can test this by going to `localhost:3000/users/1/libraries`. If you want, you can test that this is working by launching your `rails console` and adding a library to a user, then refreshing the page.
 
 
 ## Add A User Lib
@@ -293,7 +287,7 @@ end
 
 ## Authorization
 
-Let's say that in order to visit a `users#show` page you have to be logged in. We'll use a special `before_action` to check for this.
+Let's say that in order to visit a `users#show` page you have to be logged in. You could use a special `before_action` to check for this.
 
 ```ruby
 class UsersController < ApplicationController
@@ -309,6 +303,8 @@ class UsersController < ApplicationController
 
 end
 ```
+
+This `before_action` line means there must be a `logged_in?` method somewhere that will be called before the show action is run.  Add a `logged_in?` helper method to the sessions helper to check whether there is a current user. 
 
 What other endpoints should be protected? Should an unauthenticated user be able to CRUD resources? Think about POST, PUT, and DELETE!
 
