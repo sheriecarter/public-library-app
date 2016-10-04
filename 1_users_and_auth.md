@@ -150,6 +150,8 @@ Ok, now we should see `0` users signed up on the home page.
 
 That makes sense because there's no way to sign up yet.  **YET.**
 
+> Optionally, you can add a new `GET /users` route that also uses the `users#index` controller action.
+
 ### The '/users/new' route should show a signup form.
 
 
@@ -321,7 +323,7 @@ end
 Now when we post the form for the user, you'll see the user being created. The difference now is the `password_digest` is being properly hashed so it's safe to store.  Thanks for `has_secure_password`, Rails!
 
 
-### The /users/:id route should show a view with all of the information about the user with id `:id`.
+### The `GET /users/:id` route should show a view with all of the information about the user with id `:id`.
 
 Now we want to add a route to `GET /users/:id`.
 
@@ -400,11 +402,11 @@ end
 
 ```
 
-**Check for understanding**: Justify the choice to use `sessions#new` for the log in form.
+**Self-check for understanding**: Justify the choice to use `sessions#new` for the log in form.
 
-**Check for understanding**: Which `sessions` controller action will we use to actually set the session and log the user in?
+**Self-check for understanding**: Which `sessions` controller action will we use to actually set the session and log the user in?
 
-**Check for understanding**: Which `sessions` controller action will we use to log out?
+**Self-check for understanding**: Which `sessions` controller action will we use to log out?
 
 
 Let's generate the new controller.
@@ -596,7 +598,7 @@ end
 
 ```
 
-### The /logout route should log the user out.
+### The GET /logout route should log the user out.
 
 Start with the route!
 
@@ -604,12 +606,15 @@ Start with the route!
 Rails.application.routes.draw do
   ...
   get "/login", to: "sessions#new"
-  get "/logout", to: "sessions#destroy" # <-- strictly speaking this isn't RESTful (it should be a DELETE not GET), but it's super convenient to do it this way
+  get "/logout", to: "sessions#destroy"  
   post "/sessions", to: "sessions#create"
 end
 ```
 
 We decide to use `sessions#destroy` because all of the information that's keeping a user logged in is in the user's session.
+
+Strictly speaking, it isn't RESTful to do a destroy with the `GET` method (it should be `DELETE`). However, it's super convenient to do log out this way so we can add a log out link on each page. 
+
 
 The `sessions#destroy` controller action needs to clear the `user_id` from the session:
 
@@ -701,10 +706,9 @@ end
 ```
 
 
-And let's make sure to update `views/layouts/application.html.erb` to display the messages.
+And make sure to update `views/layouts/application.html.erb` to display the messages.
 
 ``` html
-...
 
 <% flash.each do |name, msg| %>
   <p>
