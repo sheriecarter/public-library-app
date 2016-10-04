@@ -154,14 +154,14 @@ end
 ```
 </details>
 
-## CRUDing Libraries
+### CRUDing Libraries
 We now have the ability to view all libraries  and create new libraries.
 
 **Independent Practice**: Implement `libraries#show` on your own. You will need to create routes, controller actions, and views.
 
 Bonus: We recommend you also try to implement `edit`, `update`, `show`, and `delete`, but these aren't required for our initial setup.
 
-## Joining A Library
+### Associating Users and Libraries
 Before we get start letting users become library members,  we need to wire together all of our models to know about these associations. Use the `has_many` `through` pattern to set up the many-to-many association in the models.
 
 <details><summary>click for code</summary>
@@ -261,7 +261,7 @@ Then we can have the `index` view list the user's libraries (`app/views/library_
 We can test this by going to `localhost:3000/users/1/libraries`. If you want, you can test that this is working by launching your `rails console` and adding a library to a user, then refreshing the page.
 
 
-## Add A Membership
+### Add A Membership
 
 We should make a button that allows a user to become a member of a library!
 
@@ -316,7 +316,7 @@ end
 </details>
 
 
-## Authorization
+### Authorization
 
 Let's say that in order to visit a `users#show` page, you have to be logged in. Use a special `before_action` to check for this. Set up a `logged_in?` session helper to make help keep the controller "skinny."
 
