@@ -880,7 +880,9 @@ Nice work! We're finished with Authentication!
 
 ### Practice!
 
-Now  do it all again!!!  This time, don't use "user" as your user object - try "gymgoers", "moms", "singers", or whatever you'd like - just no users allowed.  Once you've completed the app to this level another time, you can move on to any bonuses you're interested in below.
+Now  do it all again!!!  This time, don't use "user" as your user object - try "gymgoers", "moms", "singers", "tacos" or whatever you'd like - just no users allowed.  Once you've completed the app to this level another time, you can move on to any bonuses you're interested in below.
+
+
 
 
 ## Bonus
