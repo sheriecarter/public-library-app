@@ -568,7 +568,10 @@ new_user GET  /users/new(.:format) users#new
    users POST /users(.:format)     users#create
     user GET  /users/:id(.:format) users#show
    login GET  /login(.:format)     sessions#new
+sessions POST /sessions(.:format)  sessions#create
 ```
+
+Note that the `POST /sessions` route has automatically been assigned the prefix `sessions`. This may seem odd, but its url or path (`sessions_path`, `"/sessions"`) is actually the same as the `sessions#index` route where we'd usually expect to see this prefix. That said, we won't use the prefix in our code. 
 
 
 Now let's add the `sessions#create` controller action. It should log the user in by saving their id into the session.
@@ -636,8 +639,10 @@ rails c
 > User.confirm({email: "test@test.com", password: "WRONG"})
 ```
 
+Try with an existing correct email/password combination and with an incorrect password/email combination. 
 
-Okay, back to the `sessions#create` action.  If we confirm this is an authentic user, we should log them in. Write code that logs in confirmed users and sends them to their show page, and write code that redirects non-confirmed visitors to the login path. 
+
+Okay, back to the `sessions#create` action.  If we confirm this is an authentic user, we should log them in. Write code that logs in confirmed users and sends them to their show page, and write code that redirects non-confirmed visitors to the login path. (You may want to create and use a `login` session helper method). 
 
 <details><summary>click for code</summary>
 ```ruby
@@ -696,47 +701,65 @@ end
 </details>
 </details>
 
-Now try to log in with a correct email/password combination and an incorrect one.  Do you see a welcome when you use the correct information? If so, you're ready to continue. Otherwise, you should start debug before moving on.
+Now try to log in using the form, both with a correct email/password combination and an incorrect one.  Do you see a welcome when you use the correct information? And do you see the log in form again if you enter the wrong one (hm, a flash message would be nice here)? If so, you're ready to continue. Otherwise, you should start debug before moving on.
 
 ### Refactor: Signing up should also log a user in.
 
-After a user is signed up they should be logged in. Thank goodness we have a convenient `login` helper to keep our code DRY!
+After a user is signed up they should be logged in. Thank goodness we have a convenient `login` helper to keep our code DRY! Refactor the controller action that handles signing up so that it calls this `login` method for the new user and redirects to the user show page. 
 
+<details><summary>click for code</summary>
 ```ruby
 
 class UsersController < ApplicationController
 
   def create
     @user = User.create(user_params)
-    login(@user) # <-- login the user
+    login(@user) # <-- log the user in
     redirect_to @user # <-- go to show
   end
 
 end
 
 ```
+</details>
+
+Try signing up - you should see the welcome message from the user show page. 
 
 ### The GET /logout route should log the user out.
 
-Start with the route!
+Start with the route! We'll use the `sessions#destroy` controller action to handle logging out. 
 
 <details><summary>click for code</summary>
 ```ruby
 Rails.application.routes.draw do
   # ...
-  get "/login", to: "sessions#new"
-  get "/logout", to: "sessions#destroy"  
-  post "/sessions", to: "sessions#create"
+  get '/login', to: 'sessions#new'
+  get '/logout', to: 'sessions#destroy'
+  post '/sessions', to: 'sessions#create'
 end
 ```
 </details>
+
+Run `rails routes`!
+
+```
+  Prefix Verb URI Pattern          Controller#Action
+    root GET  /                    users#index
+new_user GET  /users/new(.:format) users#new
+   users POST /users(.:format)     users#create
+    user GET  /users/:id(.:format) users#show
+   login GET  /login(.:format)     sessions#new
+sessions POST /sessions(.:format)  sessions#create
+```
+
 
 We decided to use `sessions#destroy` because all of the information that's keeping a user logged in is in the user's session.
 
 Strictly speaking, it isn't RESTful to do a destroy with the `GET` method (it should be `DELETE`). However, it's super convenient to do log out this way so we can add a log out link on each page. 
 
 
-The `sessions#destroy` controller action needs to clear the `user_id` from the session:
+The `sessions#destroy` controller action needs to clear the `user_id` from the session. This is a great time to start thinking about using a `logout` session helper method, too. 
+
 <details><summary>click for code</summary>
 ```ruby
 class SessionsController < ApplicationController
@@ -751,7 +774,7 @@ end
 ```
 </details>
 
-Let's go ahead and add a `logout` helper method to correspond to the `login` we wrote before.
+Let's go ahead and add that `logout` helper method to correspond to the `login` we wrote before.
 
 <details><summary>click for code</summary>
 ```ruby
@@ -776,27 +799,25 @@ end
 
 Now we can go directly to the `/logout` URL to log out (delete the session user_id), but we should also have a "Log Out" button somewhere.
 
-Even better would be a navbar with all the login/signup/logout options. Let's add a navbar to `views/layouts/application.html.erb` with some conditional logic, depending on whether we have a current user logged in:
+Even better would be a navbar with all the login/signup/logout options. Let's add a very simple list of navigation links to `views/layouts/application.html.erb` with some conditional logic, depending on whether we have a current user logged in:
 
 <details><summary>click for code</summary>
 ```html
-<!--<html>-->
-<!--<body>-->
+<body>
+  <ul>
+    <% if current_user %>
+      <li><%= link_to "Profile", user_path(current_user) %></li>
+      <li><%= link_to "Log Out", logout_path %></li>
+    <% else %>
+      <li><%= link_to "Create Account", new_user_path %></li>
+      <li><%= link_to "Log In", login_path %></li>
+    <% end %>
+  </ul>
 
-<ul>
-  <% if current_user %>
-    <li><%= link_to "Profile", user_path(current_user) %></li>
-    <li><%= link_to "Log Out", logout_path %></li>
-  <% else %>
-    <li><%= link_to "Create Account", new_user_path %></li>
-    <li><%= link_to "Log In", login_path %></li>
-  <% end %>
-</ul>
+<%= yield %>
+<!-- ... -->
+</body>
 
-<!--<%= yield %>-->
-
-<!--</body>-->
-<!--</html>-->
 ```
 </details>
 
@@ -836,23 +857,30 @@ Update `views/layouts/application.html.erb` to display the messages.
 
 <details><summary>click for code</summary>
 ``` html
-
+<body>
+<!-- ... -->
 <% flash.each do |name, msg| %>
   <p>
     <small> <%= name.capitalize %>: <%= msg %> </small>
   </p>
 <% end %>
+<!-- ... -->
+<%= yield %>
 
-<!--<%= yield %>-->
-
-<!--</body>-->
-<!--</html>-->
+</body>
 ```
 </details>
 
+Try logging in with correct and incorrect information, and try logging out. Ensure that these are working. 
+
+
 Nice work! We're finished with Authentication!
 
-Now delete this app and do it again!!! Once you've completed the app to this level another time, you can move on to any bonuses you're interested in below.
+
+
+### Practice!
+
+Now delete this app and do it again!!!  This time, don't use "user" as your user object - try "gymgoers", "moms", "singers", or whatever you'd like - just no users allowed.  Once you've completed the app to this level another time, you can move on to any bonuses you're interested in below.
 
 
 ## Bonus
