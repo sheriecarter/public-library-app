@@ -13,8 +13,8 @@ cd lib_app
 ```
 </details>
 
-<details><summary>click for code</summary>
 Create the databases:
+<details><summary>click for code</summary>
 ``` bash
 rails db:create
 ```
@@ -36,7 +36,7 @@ Let's start with a route for `root`, which is just a helper method in Rails for 
 
 ```ruby
 Rails.application.routes.draw do
-  root to: "users#index"
+  root to: 'users#index'
 end
 ```
 </details>
@@ -56,8 +56,9 @@ Prefix Verb URI Pattern      Controller#Action
 
 If we're working routeside-in, the question now is **what to do next?** There are a few ways to figure this out. We could go to our new home page in the browser and see a helpful error message. Just looking at the output we have so far, you may notice we don't have a `users#index`. We don't even have a `UsersController`.
 
-Let's practice using our `rails generate` skills.
+Let's practice using our `rails generate` skills to create a users controller and associated files.
 
+<details><summary>click for code</summary>
 ```bash
 rails g controller users
 ```
@@ -81,6 +82,8 @@ This does something like the following:
 Note the special `create` statements here. The `***` ones are the most important. It creates the `users_controller.rb` file and the `views/users` directory.
 </details>
 
+</details>
+
 Now that we have a `users_controller.rb` we should add our `users#index` method.
 
 <details><summary>click for code</summary>
@@ -94,7 +97,7 @@ end
 ```
 </details>
 
-Now, if you visit the site in your browser, you may see an error about a missing view! We need to actually create a `users/index.html.erb` view for this route to render:
+Now, if you visit the site in your browser, you may see an error about a missing template! We need to actually create a `users/index.html.erb` view template for this route to render:
 
 <details><summary>click for code</summary>
 ```bash
@@ -102,7 +105,7 @@ touch app/views/users/index.html.erb
 ```
 </details>
 
-Then we can go ahead and add something actual content to our `index` - the count of users:
+Then we can go ahead and add some actual content to our `index` - the count of users:
 
 <details><summary>click for code</summary>
 
@@ -110,13 +113,13 @@ Then we can go ahead and add something actual content to our `index` - the count
 <h1>Welcome to Users Index.</h1>
 
 <div>
-There are currently <%= @users.length %> signed up!
+There are currently <%= @users.length %> user(s) signed up!
 </div>
 ```
 
 </details>
 
-Check that root route in the browser again.  Uh-oh! Let's pop back over to the controller and make sure we have the right data available for our view:
+Check that root route in the browser again.  Uh-oh! If you have an error, pop back over to the controller and make sure we have the right data available for the view:
 
 <details><summary>click for code</summary>
 ```rb
@@ -130,7 +133,7 @@ end
 ```
 </details>
 
-But wait! If you go to `localhost:3000` after this step (like you should be!), we have a problem. No User model.
+But wait! If you go to `localhost:3000` after this step (like you should be!), we have a problem. No `User` model.
 
 Generate a `User` model with `email`, `first_name`, `last_name`, and `password_digest` strings. 
 
@@ -144,10 +147,10 @@ Then go ahead and verify that the migration looks correct:
 
 
 <details><summary>click for sample `db/migrate/201575943834_create_users.rb`</summary>
-`db/migrate/201575943834_create_users.rb`
+`db/migrate/201675943834_create_users.rb`
 
 ```ruby
-class CreateUsers < ActiveRecord::Migration
+class CreateUsers < ActiveRecord::Migration[5.0]
   def change
     create_table :users do |t|
       t.string :email
@@ -155,7 +158,7 @@ class CreateUsers < ActiveRecord::Migration
       t.string :last_name
       t.string :password_digest
 
-      t.timestamps null: false
+      t.timestamps
     end
   end
 end
@@ -176,15 +179,15 @@ That makes sense because there's no way to sign up yet.  **YET.**
 
 ### The ' GET /users/new' route should show a signup form.
 
-Create this route. 
+Create this route. Remember to set up the proper prefix. 
 
 <details><summary>click for code</summary>
 ```ruby
 
 Rails.application.routes.draw do
-  root to: "users#index"
+  root to: 'users#index'
 
-  get "/users/new", to: "users#new", as: "new_user"
+  get '/users/new', to: 'users#new', as: 'new_user'
 end
 ```
 </details>
@@ -197,7 +200,7 @@ Check that you get the following output from `rails routes`:
 new_user GET  /users/new(.:format) users#new
 ```
 
-We don't have a `users#new` controller action, so let's create one. If you'd like, you can go ahead and fill it in so it gets the data you know you'll need in the view.
+We don't have a `users#new` controller action, so let's create one. If you'd like, you can go ahead and fill it in so it gets the data for the form view.
 
 <details><summary>click for code</summary>
 ```ruby
@@ -207,19 +210,24 @@ class UsersController < ApplicationController
   #...
 
   def new
-    # we need to make
-    # a new user
-    # to pass to the
-    # form later
+    # we make a new user
+    # to pass to the form view later
     @user = User.new
   end
 
-end
 
 ```
 </details>
 
 Then we can continue on to creating a `new.html.erb` view for the sign up form:
+
+<details><summary>click for code</summary>
+```
+touch app/views/users/new.html.erb
+```
+</details>
+
+In that file, use `form_for @user` to create a sign up form. 
 
 <details><summary>click for code</summary>
 ```html
@@ -243,39 +251,41 @@ Sign Up
 ```
 </details>
 
-This should renders a form like the following (note the authenticity token):
+Visit `/users/new` in your browser.  You should see a form. Inspect it to see that the `form_for` helper renders a form like the following (note the authenticity token):
 
 <details><summary>click to see HTML </summary>
 ```html
 Sign Up
 
-<form class="new_user" id="new_user" action="/users" accept-charset="UTF-8" method="post"><input name="utf8" type="hidden" value="&#x2713;" /><input type="hidden" name="authenticity_token" value="5989PH35p43aagbgiuA/C02p8uD6bLmZR+GCLd01lYPmBOSGLNoHMnEGuZXyzHjnTsMvW6h5860tN6CswMsU5A==" />
+<form class="new_user" id="new_user" action="/users" accept-charset="UTF-8" method="post"><input name="utf8" type="hidden" value="✓">
+  <input type="hidden" name="authenticity_token" value="6EhU37Nz3gcbL8UsJL6Q868ZOI0a/UWJ2GLMOdu4fuiMEb8y8AthB6t032Of4seUgI0NMv8wOPPNPZ/eFOkNfw==">
   <div>
-    <input placeholder="First Name" type="text" name="user[first_name]" id="user_first_name" />
+    <input placeholder="First Name" type="text" name="user[first_name]" id="user_first_name">
   </div>
   <div>
-    <input placeholder="Last Name" type="text" name="user[last_name]" id="user_last_name" />
+    <input placeholder="Last Name" type="text" name="user[last_name]" id="user_last_name">
   </div>
   <div>
-    <input placeholder="Email" type="text" name="user[email]" id="user_email" />
+    <input placeholder="Email" type="text" name="user[email]" id="user_email">
   </div>
   <div>
-    <input placeholder="Password" type="password" name="user[password]" id="user_password" />
+    <input placeholder="Password" type="password" name="user[password]" id="user_password">
   </div>
-  <input type="submit" name="commit" value="Sign Up" />
+  <input type="submit" name="commit" value="Sign Up" data-disable-with="Sign Up">
 </form>
 ```
 
-Note here the correlation between the key we put into `f.text_field` and `name="..."` in the generated form.
+Note here the correlation between the symbol we put into `f.text_field` and `name="..."` in the generated form.
 </details>
 
-What error do you see if you try to submit this form in the browser now?
 
 Note what kind of request this form will make and the path it's going to.
 
 ```html
 <form class="new_user" id="new_user" action="/users" accept-charset="UTF-8" method="post">
 ```
+
+What error do you see if you try to submit this form in the browser now?
 
 It looks like this form is sending `POST /USERS`. Do we have a route for that?
 
@@ -288,15 +298,24 @@ We don't have that route, so set it up next.
 <details><summary>click for code</summary>
 ```ruby
 Rails.application.routes.draw do
-  root to: "users#index"
+  root to: 'users#index'
 
-  get "/users/new", to: "users#new", as: "new_user"
-  post "/users", to: "users#create"
+  get '/users/new', to: 'users#new', as: 'new_user'
+  post '/users', to: 'users#create'
 end
 ```
 </details>
 
-Then, add the `create` action in the users controller.
+Running `rails routes` should now show:
+
+```
+  Prefix Verb URI Pattern          Controller#Action
+    root GET  /                    users#index
+new_user GET  /users/new(.:format) users#new
+   users POST /users(.:format)     users#create
+```
+
+Then, add the `create` action in the users controller. Remember to use strong parameters. (Bonus for separating these into a private method.)
 
 <details><summary>click for code</summary>
 ```ruby
@@ -329,7 +348,11 @@ AttributeError in UsersController#create
 unknown attribute 'password' for User.
 ```
 
-This is because we only have a `password_digest` in our user model. We also haven't set up authentication logic yet -- part of this logic will be turning the plain password the user enters into a password digest that is safe to store in our database.
+Oops! Don't we need users to submit passwords to sign up??
+
+No! We only have a `password_digest` in our user model, and we'll only store a `password_digest` in our database. This `password_digest` will be a salted and hashed (obfuscated) version of the user's acutal password. 
+
+We actually haven't set up any authentication logic yet -- part of this logic will be turning the plain password the user enters into a password digest that is safe to store in our database.
 
 
 Uncomment your `bcrypt` in your `Gemfile`:
@@ -347,7 +370,7 @@ gem 'bcrypt'
 ```
 </details>
 
-Then we can add `has_secure_password` to our user model:
+Once bcrypt is added, we can use the `has_secure_password` method in our user model:
 
 <details><summary>click for code</summary>
 ```ruby
@@ -357,26 +380,47 @@ end
 ```
 </details>
 
+Reload the page to make sure this hasn't caused any errors.
+
+
+<details><summary>click for hint to solve `LoadError`</summary>
+We changed the Gemfile by bringing in `bcrypt` - did you remember to `bundle install`? You may also need to restart your server. 
+</details>
+
+
 Now when we post the form for the user, you'll see the user being created. The difference now is that the password is being properly hashed and salted into a `password_digest`, so it's safe to store.  Thanks for `has_secure_password`, Rails!
+
 
 
 ### The `GET /users/:id` route should show a view with all of the information about the user with id `:id`.
 
-Now we want to add a route to `GET /users/:id`.
+Now we'll add a route to `GET /users/:id`.
 
 <details><summary>click for code</summary>
 ```ruby
 
 Rails.application.routes.draw do
-  root to: "users#index"
+  root to: 'users#index'
 
-  get "/users/new", to: "users#new", as: "new_user"
-  post "/users", to: "users#create"
-  get "/users/:id", to: "users#show", as: "user"
+  get '/users/new', to: 'users#new', as: 'new_user'
+  post '/users', to: 'users#create'
+  get '/users/:id', to: 'users#show', as: 'user'
 end
 
 ```
+
+Guess what fun error you'll get later if you put the `/users/:id` route before the `/users/new` route!
 </details>
+
+Rails routes!
+
+```
+  Prefix Verb URI Pattern          Controller#Action
+    root GET  /                    users#index
+new_user GET  /users/new(.:format) users#new
+   users POST /users(.:format)     users#create
+    user GET  /users/:id(.:format) users#show
+```
 
 Also  add a `users#show` controller action.
 
@@ -384,7 +428,7 @@ Also  add a `users#show` controller action.
 ```ruby
 
 class UsersController < ApplicationController
-
+  #...
   def show
     @user = User.find_by_id(params[:id])
   end
@@ -394,10 +438,13 @@ end
 ```
 </details>
 
-
-Then we need a `users/show.html.erb` to display the user's information.
+Try visiting `/users/1` in the browser.  We need a `users/show.html.erb` to display the user's information.
 
 <details><summary>click for code</summary>
+```bash
+touch app/views/users/show.html.erb
+```
+
 ```html
 
 <div>
@@ -407,25 +454,7 @@ Then we need a `users/show.html.erb` to display the user's information.
 ```
 </details>
 
-Let's test what we've got so far by creating a user.
-
-Open the rails console and manually make a user:
-
-<details><summary>click for code</summary>
-```bash
-rails c
-> user = User.create(
->  email: 'test@test.com',
->  first_name: "test",
->  last_name: "subject",
->  password: "123"
->)
-```
-</details>
-
-Or you can add a user with the form you just created at `/users/new`.
-
-Test your user show view with your new user before moving on.
+Let's test what we've got so far by going to the show page of an existing user in the browser.
 
 ## Managing Sessions for Existing Users
 
@@ -442,7 +471,7 @@ Rails.application.routes.draw do
 
   #...
 
-  get "/login", to: "sessions#new"
+  get '/login', to: 'sessions#new'
 
 end
 
@@ -461,10 +490,10 @@ Let's generate the new controller.
 rails g controller sessions --no-assets
 ```
 
-This will create both `sessions_controller.rb` and `sessions_helper.rb`, but it will skip adding `app/assets/javascripts/sessions.coffee` and `app/assets/stylesheets/sessions.scss`.
+This will create  `sessions_controller.rb`, `sessions_helper.rb` and a `views/sessions/` directory, but it will skip adding `app/assets/javascripts/sessions.coffee` and `app/assets/stylesheets/sessions.scss`.
 
 
-Now we need to add the `sessions#new` action.
+Now we need to add the `sessions#new` action. This will just show a log in form that takes a user's password and email. 
 
 <details><summary>click for code</summary>
 ```ruby
@@ -489,7 +518,8 @@ touch app/views/sessions/new.html.erb
 
 
 
-This login form can look very similar to the form for sign in, but we'll need to be a little more specific about the `form_for` line:
+This login form can look very similar to the form for sign in, but we'll need to be a little more specific about the `form_for` line, but it only needs email and password fields:
+
 <details><summary>click for code</summary>
 ```html
 
@@ -508,6 +538,10 @@ Login
 ```
 </details>
 
+Try using an `email_field` for some built-in client side validataions and a `password_field` to obscure the password as the user types.
+
+Verify that you can see the log in form.  What error do you get when you submit?
+
 ### POSTing to /sessions should log a user in if the email/password combination was correct.
 
 Note that the form is getting submited to `POST /sessions`. We don't have a `sessions#create` however or a route to handle the post.
@@ -519,16 +553,30 @@ Rails.application.routes.draw do
 
   # ...
 
-  get "/login", to: "sessions#new"
-
-  post "/sessions", to: "sessions#create"
+  get '/login', to: 'sessions#new'
+  post '/sessions', to: 'sessions#create'
 
 end
 ```
 </details>
 
+Verify your routes:
+
+```
+    root GET  /                    users#index
+new_user GET  /users/new(.:format) users#new
+   users POST /users(.:format)     users#create
+    user GET  /users/:id(.:format) users#show
+   login GET  /login(.:format)     sessions#new
+```
+
 
 Now let's add the `sessions#create` controller action. It should log the user in by saving their id into the session.
+
+This will involve:
+- creating a `User.confirm` method in the user model
+- creating `login` and `current_user` helper methods in the sessions helpers file
+- including the session helper methods in the application controller
 
 <details><summary>click for code</summary>
 
