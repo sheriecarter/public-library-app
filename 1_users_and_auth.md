@@ -8,8 +8,8 @@ Create a new rails app without tests and with a PostgreSQL database:
 
 <details><summary>click for code</summary>
 ```bash
-rails new lib_app -T -d postgresql
-cd lib_app
+rails new lib-app -T -d postgresql
+cd lib-app
 ```
 </details>
 
